@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guessing Game</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-elevated: #273549;
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --line: #334155;
+      --accent: #38bdf8;
+      --sim: #16a34a;
+      --nao: #dc2626;
+      --focus: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #17253b 0%, var(--bg) 60%);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 28px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title::before {
+      content: "";
+      width: 10px;
+      height: 30px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, var(--accent), var(--focus));
+      display: inline-block;
+    }
+
+    .topbar-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ghost-btn {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .ghost-btn:hover {
+      border-color: #64748b;
+      background: var(--surface-elevated);
+    }
+
+    .ghost-btn.active {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.14);
+      color: #e0f2fe;
+    }
+
+    .layout {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 28px 32px;
+      display: grid;
+      grid-template-columns: minmax(320px, 390px) 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 14px 18px 28px;
+        gap: 20px;
+      }
+
+      .topbar {
+        padding: 20px 18px 6px;
+      }
+
+      .brand-title {
+        font-size: 1.7rem;
+      }
+    }
+
+    .game-panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 36px 26px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .animal-icon {
+      font-size: 4.1rem;
+      line-height: 1;
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prompt-text {
+      font-size: 1.85rem;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      max-width: 340px;
+      color: var(--ink);
+    }
+
+    .sub-prompt {
+      font-size: 1.05rem;
+      color: var(--muted);
+      min-height: 24px;
+    }
+
+    .choice-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .choice-btn {
+      padding: 18px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.15s ease;
+    }
+
+    .choice-btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-yes {
+      background: var(--sim);
+      color: #ffffff;
+    }
+
+    .btn-yes:hover {
+      opacity: 0.92;
+    }
+
+    .btn-no {
+      background: var(--nao);
+      color: #ffffff;
+    }
+
+    .btn-no:hover {
+      opacity: 0.92;
+    }
+
+    .tree-panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .tree-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+
+    .legend-inline {
+      display: flex;
+      gap: 16px;
+      font-weight: 600;
+    }
+
+    .leg-nao { color: #f87171; }
+    .leg-sim { color: #4ade80; }
+    .leg-atual { color: #60a5fa; }
+
+    svg#arvore-svg {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1140 / 620;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand-title">Guessing Game</h1>
+    <div class="topbar-controls">
+      <button id="btn-modo" class="ghost-btn" onclick="alternarExibicaoArvore()">
+        Mostrar árvore inteira
+      </button>
+      <button class="ghost-btn" onclick="iniciarNovaPartida()">
+        Reiniciar (R)
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="game-panel">
+      <div id="icone-jogo" class="animal-icon">🐾</div>
+      <h2 id="pergunta-jogo" class="prompt-text">É um mamífero?</h2>
+      <p id="aviso-jogo" class="sub-prompt">Responda Sim (S) ou Não (N)</p>
+
+      <div id="botoes-jogo" class="choice-row">
+        <button class="choice-btn btn-yes" onclick="tratarResposta(true)">Sim (S)</button>
+        <button class="choice-btn btn-no" onclick="tratarResposta(false)">Não (N)</button>
+      </div>
+    </section>
+
+    <section class="tree-panel">
+      <div class="tree-caption">
+        <span>Percurso em tempo real</span>
+        <div class="legend-inline">
+          <span class="leg-nao">← Não (Esquerda)</span>
+          <span class="leg-sim">Sim (Direita) →</span>
+          <span class="leg-atual">● Nó atual</span>
+        </div>
+      </div>
+      <svg id="arvore-svg" viewBox="0 0 1140 620" role="img" aria-label="Mapa de decisões"></svg>
+    </section>
+  </main>
+
+  <script>
+    // Espelha a classe NoDecisao do projeto C# (Texto, Nao = esquerda, Sim = direita)
+    class NoDecisao {
+      constructor(id, texto, rotuloCurto, icone, nao = null, sim = null) {
+        this.id = id;
+        this.texto = texto;
+        this.rotuloCurto = rotuloCurto;
+        this.icone = icone;
+        this.nao = nao;
+        this.sim = sim;
+      }
+
+      // Equivalente ao metodo EhFolha() em C#
+      ehFolha() {
+        return this.nao === null && this.sim === null;
+      }
+    }
+
+    // Constroi exatamente a mesma arvore de 11 animais usada no console C#
+    function montarArvore() {
+      // Ramo esquerdo da raiz: nao e mamifero
+      const tartaruga = new NoDecisao("tartaruga", "Tartaruga", "Tartaruga", "🐢");
+      const cobra = new NoDecisao("cobra", "Cobra", "Cobra", "🐍");
+      const rasteja = new NoDecisao("rasteja", "Ele rasteja?", "Rasteja?", "🦎", tartaruga, cobra);
+
+      const jacare = new NoDecisao("jacare", "Jacaré", "Jacaré", "🐊");
+      const tubarao = new NoDecisao("tubarao", "Tubarão", "Tubarão", "🦈");
+      const guelras = new NoDecisao("guelras", "Ele tem guelras?", "Guelras?", "🫧", jacare, tubarao);
+
+      const aguaNaoMamifero = new NoDecisao("agua_nm", "Ele vive na água?", "Na água?", "🌊", rasteja, guelras);
+
+      const pinguim = new NoDecisao("pinguim", "Pinguim", "Pinguim", "🐧");
+      const aguia = new NoDecisao("aguia", "Águia", "Águia", "🦅");
+      const aveVoa = new NoDecisao("ave_voa", "Ele voa?", "Voa?", "🪽", pinguim, aguia);
+
+      const temPenas = new NoDecisao("penas", "Ele tem penas?", "Tem penas?", "🪶", aguaNaoMamifero, aveVoa);
+
+      // Ramo direito da raiz: e mamifero
+      const cavalo = new NoDecisao("cavalo", "Cavalo", "Cavalo", "🐴");
+      const cachorro = new NoDecisao("cachorro", "Cachorro", "Cachorro", "🐶");
+      const late = new NoDecisao("late", "Ele late?", "Late?", "🔊", cavalo, cachorro);
+
+      const gato = new NoDecisao("gato", "Gato", "Gato", "🐱");
+      const mia = new NoDecisao("mia", "Ele mia?", "Mia?", "🐾", late, gato);
+
+      const golfinho = new NoDecisao("golfinho", "Golfinho", "Golfinho", "🐬");
+      const aguaMamifero = new NoDecisao("agua_m", "Ele vive na água?", "Na água?", "🌊", mia, golfinho);
+
+      const morcego = new NoDecisao("morcego", "Morcego", "Morcego", "🦇");
+      const mamiferoVoa = new NoDecisao("mam_voa", "Ele voa?", "Voa?", "🪽", aguaMamifero, morcego);
+
+      // No raiz
+      return new NoDecisao("raiz", "É um mamífero?", "Mamífero?", "❓", temPenas, mamiferoVoa);
+    }
+
+    // Coordenadas calibradas em viewBox 1140x620 com folga entre todos os nos
+    const COORDENADAS = {
+      // Nivel 1 (Raiz)
+      raiz:      { x: 570, y: 44 },
+
+      // Nivel 2
+      penas:     { x: 300, y: 138 },
+      mam_voa:   { x: 840, y: 138 },
+
+      // Nivel 3
+      agua_nm:   { x: 185, y: 238 },
+      ave_voa:   { x: 430, y: 238 },
+      agua_m:    { x: 715, y: 238 },
+      morcego:   { x: 1025, y: 238 },
+
+      // Nivel 4
+      rasteja:   { x: 110, y: 344 },
+      guelras:   { x: 270, y: 344 },
+      pinguim:   { x: 380, y: 344 },
+      aguia:     { x: 490, y: 344 },
+      mia:       { x: 635, y: 344 },
+      golfinho:  { x: 835, y: 344 },
+
+      // Nivel 5
+      tartaruga: { x: 60,  y: 456 },
+      cobra:     { x: 162, y: 456 },
+      jacare:    { x: 222, y: 456 },
+      tubarao:   { x: 324, y: 456 },
+      late:      { x: 575, y: 456 },
+      gato:      { x: 710, y: 456 },
+
+      // Nivel 6
+      cavalo:    { x: 515, y: 568 },
+      cachorro:  { x: 635, y: 568 }
+    };
+
+    const raiz = montarArvore();
+
+    // Estados do jogo seguindo o fluxo do console C#
+    let estadoJogo = "pergunta";
+    let noAtual = raiz;
+    let visitados = new Set(["raiz"]);
+    let arestasAtivas = [];
+    let arvoreCompletaVisivel = false;
+
+    const elIcone = document.getElementById("icone-jogo");
+    const elPergunta = document.getElementById("pergunta-jogo");
+    const elAviso = document.getElementById("aviso-jogo");
+    const elSvg = document.getElementById("arvore-svg");
+
+    function alternarExibicaoArvore() {
+      arvoreCompletaVisivel = !arvoreCompletaVisivel;
+      const btn = document.getElementById("btn-modo");
+      btn.textContent = arvoreCompletaVisivel ? "Ocultar não visitados" : "Mostrar árvore inteira";
+      btn.classList.toggle("active", arvoreCompletaVisivel);
+      desenharArvore();
+    }
+
+    function reiniciarCaminhoNaRodada() {
+      noAtual = raiz;
+      visitados = new Set(["raiz"]);
+      arestasAtivas = [];
+      estadoJogo = "pergunta";
+      atualizarTela();
+    }
+
+    function iniciarNovaPartida() {
+      reiniciarCaminhoNaRodada();
+    }
+
+    function tratarResposta(ehSim) {
+      if (estadoJogo === "pergunta") {
+        // Caso base: no folha (palpite final)
+        if (noAtual.ehFolha()) {
+          if (ehSim) {
+            elIcone.textContent = "🎉";
+            elPergunta.textContent = "Boa! Acertei o animal!";
+            elAviso.textContent = "Deseja jogar uma nova partida?";
+            estadoJogo = "nova_partida";
+          } else {
+            elIcone.textContent = "😅";
+            elPergunta.textContent = "Puxa, errei esse palpite!";
+            elAviso.textContent = "Deseja tentar outro palpite agora?";
+            estadoJogo = "tentar_outro";
+          }
+          return;
+        }
+
+        // Passo recursivo: desce para Sim (direita) ou Nao (esquerda)
+        const proximo = ehSim ? noAtual.sim : noAtual.nao;
+        arestasAtivas.push({
+          de: noAtual.id,
+          para: proximo.id,
+          tipo: ehSim ? "sim" : "nao"
+        });
+        visitados.add(proximo.id);
+        noAtual = proximo;
+        atualizarTela();
+        return;
+      }
+
+      if (estadoJogo === "tentar_outro") {
+        if (ehSim) {
+          reiniciarCaminhoNaRodada();
+        } else {
+          elIcone.textContent = "🐾";
+          elPergunta.textContent = "Tudo bem!";
+          elAviso.textContent = "Deseja jogar uma nova partida?";
+          estadoJogo = "nova_partida";
+        }
+        return;
+      }
+
+      if (estadoJogo === "nova_partida") {
+        if (ehSim) {
+          reiniciarCaminhoNaRodada();
+        } else {
+          elIcone.textContent = "👋";
+          elPergunta.textContent = "Até a próxima!";
+          elAviso.textContent = "Clique em Reiniciar (R) quando quiser jogar de novo.";
+        }
+      }
+    }
+
+    function atualizarTela() {
+      if (noAtual.ehFolha()) {
+        elIcone.textContent = noAtual.icone;
+        elPergunta.textContent = `Meu palpite é: ${noAtual.texto}.`;
+        elAviso.textContent = "Acertei?";
+      } else {
+        elIcone.textContent = noAtual.icone;
+        elPergunta.textContent = noAtual.texto;
+        elAviso.textContent = "Responda Sim (S) ou Não (N)";
+      }
+      desenharArvore();
+    }
+
+    function coletarTodosNos(no, lista = []) {
+      if (!no) return lista;
+      lista.push(no);
+      coletarTodosNos(no.nao, lista);
+      coletarTodosNos(no.sim, lista);
+      return lista;
+    }
+
+    function desenharArvore() {
+      const nos = coletarTodosNos(raiz);
+      let conteudo = "";
+
+      // Desenha arestas primeiro
+      nos.forEach((no) => {
+        const origem = COORDENADAS[no.id];
+        [
+          { filho: no.nao, tipo: "nao" },
+          { filho: no.sim, tipo: "sim" }
+        ].forEach(({ filho, tipo }) => {
+          if (!filho) return;
+          const destino = COORDENADAS[filho.id];
+          const visivel = arvoreCompletaVisivel || visitados.has(no.id);
+          if (!visivel) return;
+
+          const ativa = arestasAtivas.find(
+            (a) => a.de === no.id && a.para === filho.id
+          );
+
+          const cor = ativa
+            ? (ativa.tipo === "sim" ? "#22c55e" : "#f87171")
+            : "#475569";
+          const largura = ativa ? 3.5 : 2;
+          const tracejado = ativa ? "" : "4 4";
+
+          conteudo += `
+            <line x1="${origem.x}" y1="${origem.y}" x2="${destino.x}" y2="${destino.y}"
+              stroke="${cor}" stroke-width="${largura}" stroke-dasharray="${tracejado}" />
+          `;
+
+          const mx = (origem.x + destino.x) / 2;
+          const my = (origem.y + destino.y) / 2;
+          const corTextoAresta = tipo === "sim" ? "#4ade80" : "#f87171";
+          const bordaAresta = ativa ? cor : "#334155";
+
+          conteudo += `
+            <circle cx="${mx}" cy="${my}" r="9" fill="#0f172a" stroke="${bordaAresta}" stroke-width="1.5" />
+            <text x="${mx}" y="${my + 3.5}" text-anchor="middle" font-size="10"
+              font-weight="700" fill="${corTextoAresta}">
+              ${tipo === "sim" ? "S" : "N"}
+            </text>
+          `;
+        });
+      });
+
+      // Desenha nos acima das linhas com largura fixa para evitar sobreposicao
+      nos.forEach((no) => {
+        const pos = COORDENADAS[no.id];
+        const ehAtual = no.id === noAtual.id;
+        const foiVisitado = visitados.has(no.id);
+        const alcancavelAgora = arestasAtivas.some((a) => a.para === no.id);
+        const visivel = arvoreCompletaVisivel || foiVisitado || alcancavelAgora;
+        if (!visivel) return;
+
+        const ehFolha = no.ehFolha();
+        const textoExibido = ehFolha ? `${no.icone} ${no.rotuloCurto}` : no.rotuloCurto;
+        const largura = ehFolha ? 94 : 86;
+        const altura = 34;
+        const x = pos.x - largura / 2;
+        const y = pos.y - altura / 2;
+
+        let preenchimento = "#1e293b";
+        let borda = "#64748b";
+        let corTexto = "#f1f5f9";
+
+        if (ehAtual) {
+          preenchimento = "#2563eb";
+          borda = "#60a5fa";
+          corTexto = "#ffffff";
+        } else if (foiVisitado) {
+          preenchimento = "#172554";
+          borda = "#3b82f6";
+          corTexto = "#dbeafe";
+        }
+
+        conteudo += `
+          <g>
+            <rect x="${x}" y="${y}" width="${largura}" height="${altura}" rx="${ehFolha ? 17 : 9}"
+              fill="${preenchimento}" stroke="${borda}" stroke-width="${ehAtual ? 2.5 : 1.5}" />
+            <text x="${pos.x}" y="${pos.y + 4.5}" text-anchor="middle" font-size="11.5"
+              font-weight="${ehAtual ? "700" : "600"}" fill="${corTexto}">
+              ${textoExibido}
+            </text>
+          </g>
+        `;
+      });
+
+      elSvg.innerHTML = conteudo;
+    }
+
+    // Atalhos de teclado: S (Sim), N (Nao), R (Reiniciar)
+    document.addEventListener("keydown", (evento) => {
+      const tecla = evento.key.toLowerCase();
+      if (tecla === "s") tratarResposta(true);
+      if (tecla === "n") tratarResposta(false);
+      if (tecla === "r") iniciarNovaPartida();
+    });
+
+    atualizarTela();
+  </script>
+</body>
+</html>
