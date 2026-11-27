@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Guessing Game</title>
   <style>
+    /* Paleta escura de alto contraste sem fundo branco */
     :root {
       --bg: #0f172a;
       --surface: #1e293b;
@@ -34,10 +35,10 @@
     }
 
     .topbar {
-      max-width: 1440px;
+      max-width: 1480px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 28px 8px;
+      padding: 14px 28px 6px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -95,14 +96,14 @@
 
     .layout {
       flex: 1;
-      max-width: 1440px;
+      max-width: 1480px;
       width: 100%;
       margin: 0 auto;
-      padding: 16px 28px 32px;
+      padding: 10px 28px 16px;
       display: grid;
       grid-template-columns: minmax(320px, 390px) 1fr;
       gap: 24px;
-      align-items: center;
+      align-items: stretch;
     }
 
     @media (max-width: 980px) {
@@ -113,7 +114,7 @@
       }
 
       .topbar {
-        padding: 20px 18px 6px;
+        padding: 16px 18px 6px;
       }
 
       .brand-title {
@@ -130,6 +131,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 22px;
     }
 
@@ -230,8 +232,8 @@
 
     svg#arvore-svg {
       width: 100%;
-      height: auto;
-      aspect-ratio: 1140 / 620;
+      height: calc(100vh - 155px);
+      max-height: 550px;
       display: block;
     }
   </style>
@@ -270,7 +272,7 @@
           <span class="leg-atual">● Nó atual</span>
         </div>
       </div>
-      <svg id="arvore-svg" viewBox="0 0 1140 620" role="img" aria-label="Mapa de decisões"></svg>
+      <svg id="arvore-svg" viewBox="0 0 1200 640" role="img" aria-label="Mapa de decisões"></svg>
     </section>
   </main>
 
@@ -329,40 +331,40 @@
       return new NoDecisao("raiz", "É um mamífero?", "Mamífero?", "❓", temPenas, mamiferoVoa);
     }
 
-    // Coordenadas calibradas em viewBox 1140x620 com folga entre todos os nos
+    // Coordenadas calibradas em viewBox 1200x640 com blocos padronizados e margem uniforme
     const COORDENADAS = {
       // Nivel 1 (Raiz)
-      raiz:      { x: 570, y: 44 },
+      raiz:      { x: 600,  y: 46 },
 
       // Nivel 2
-      penas:     { x: 300, y: 138 },
-      mam_voa:   { x: 840, y: 138 },
+      penas:     { x: 315,  y: 142 },
+      mam_voa:   { x: 885,  y: 142 },
 
       // Nivel 3
-      agua_nm:   { x: 185, y: 238 },
-      ave_voa:   { x: 430, y: 238 },
-      agua_m:    { x: 715, y: 238 },
-      morcego:   { x: 1025, y: 238 },
+      agua_nm:   { x: 195,  y: 245 },
+      ave_voa:   { x: 465,  y: 245 },
+      agua_m:    { x: 755,  y: 245 },
+      morcego:   { x: 1085, y: 245 },
 
       // Nivel 4
-      rasteja:   { x: 110, y: 344 },
-      guelras:   { x: 270, y: 344 },
-      pinguim:   { x: 380, y: 344 },
-      aguia:     { x: 490, y: 344 },
-      mia:       { x: 635, y: 344 },
-      golfinho:  { x: 835, y: 344 },
+      rasteja:   { x: 105,  y: 355 },
+      guelras:   { x: 295,  y: 355 },
+      pinguim:   { x: 410,  y: 355 },
+      aguia:     { x: 525,  y: 355 },
+      mia:       { x: 665,  y: 355 },
+      golfinho:  { x: 875,  y: 355 },
 
       // Nivel 5
-      tartaruga: { x: 60,  y: 456 },
-      cobra:     { x: 162, y: 456 },
-      jacare:    { x: 222, y: 456 },
-      tubarao:   { x: 324, y: 456 },
-      late:      { x: 575, y: 456 },
-      gato:      { x: 710, y: 456 },
+      tartaruga: { x: 58,   y: 470 },
+      cobra:     { x: 154,  y: 470 },
+      jacare:    { x: 250,  y: 470 },
+      tubarao:   { x: 346,  y: 470 },
+      late:      { x: 600,  y: 470 },
+      gato:      { x: 740,  y: 470 },
 
       // Nivel 6
-      cavalo:    { x: 515, y: 568 },
-      cachorro:  { x: 635, y: 568 }
+      cavalo:    { x: 535,  y: 585 },
+      cachorro:  { x: 665,  y: 585 }
     };
 
     const raiz = montarArvore();
@@ -520,7 +522,7 @@
         });
       });
 
-      // Desenha nos acima das linhas com largura fixa para evitar sobreposicao
+      // Desenha nos acima das linhas com dimensoes padronizadas
       nos.forEach((no) => {
         const pos = COORDENADAS[no.id];
         const ehAtual = no.id === noAtual.id;
@@ -531,7 +533,7 @@
 
         const ehFolha = no.ehFolha();
         const textoExibido = ehFolha ? `${no.icone} ${no.rotuloCurto}` : no.rotuloCurto;
-        const largura = ehFolha ? 94 : 86;
+        const largura = ehFolha ? 88 : 84;
         const altura = 34;
         const x = pos.x - largura / 2;
         const y = pos.y - altura / 2;
